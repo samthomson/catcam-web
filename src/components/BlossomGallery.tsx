@@ -162,7 +162,7 @@ export function BlossomGallery({ npub }: BlossomGalleryProps) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {images.map((image, index) => (
           <Card
-            key={image.hash}
+            key={image.sha256}
             className="group overflow-hidden border-purple-200/50 dark:border-purple-700/30 hover:border-purple-400 dark:hover:border-purple-500 transition-all duration-300 cursor-pointer hover:shadow-xl hover:shadow-purple-500/20 hover:-translate-y-1"
             onClick={() => setSelectedImageIndex(index)}
             style={{
@@ -173,7 +173,7 @@ export function BlossomGallery({ npub }: BlossomGalleryProps) {
               {/* Image */}
               <img
                 src={image.url}
-                alt={image.description || 'Blossom image'}
+                alt={`Blossom image - ${image.type}`}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 loading="lazy"
               />
@@ -181,28 +181,21 @@ export function BlossomGallery({ npub }: BlossomGalleryProps) {
               {/* Overlay on hover */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 <div className="absolute bottom-0 left-0 right-0 p-4">
-                  {image.description && (
-                    <p className="text-white text-sm line-clamp-2 mb-2">
-                      {image.description}
-                    </p>
-                  )}
                   <div className="flex items-center gap-2 text-white/80 text-xs">
-                    {image.dimensions && (
+                    {image.width && image.height && (
                       <span className="flex items-center gap-1">
                         <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
                         </svg>
-                        {image.dimensions}
+                        {image.width}x{image.height}
                       </span>
                     )}
-                    {image.size && (
-                      <span className="flex items-center gap-1">
-                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                        </svg>
-                        {formatFileSize(parseInt(image.size))}
-                      </span>
-                    )}
+                    <span className="flex items-center gap-1">
+                      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                      </svg>
+                      {formatFileSize(image.size)}
+                    </span>
                   </div>
                 </div>
               </div>

@@ -4,13 +4,12 @@ import { Button } from '@/components/ui/button';
 
 interface BlossomImage {
   url: string;
-  hash: string;
-  mimeType?: string;
-  size?: string;
-  dimensions?: string;
-  blurhash?: string;
-  description?: string;
-  createdAt: number;
+  sha256: string;
+  size: number;
+  type: string;
+  uploaded: number;
+  width?: number;
+  height?: number;
 }
 
 interface ImageModalProps {
@@ -53,7 +52,7 @@ export function ImageModal({ images, initialIndex, onClose }: ImageModalProps) {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `blossom-${currentImage.hash.slice(0, 8)}.${getFileExtension(currentImage.mimeType)}`;
+      a.download = `blossom-${currentImage.sha256.slice(0, 8)}.${getFileExtension(currentImage.type)}`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -63,8 +62,7 @@ export function ImageModal({ images, initialIndex, onClose }: ImageModalProps) {
     }
   };
 
-  const getFileExtension = (mimeType?: string): string => {
-    if (!mimeType) return 'jpg';
+  const getFileExtension = (mimeType: string): string => {
     const ext = mimeType.split('/')[1];
     return ext || 'jpg';
   };
@@ -78,7 +76,7 @@ export function ImageModal({ images, initialIndex, onClose }: ImageModalProps) {
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center"
       onClick={onClose}
     >
@@ -121,13 +119,13 @@ export function ImageModal({ images, initialIndex, onClose }: ImageModalProps) {
       )}
 
       {/* Image Container */}
-      <div 
+      <div
         className="relative max-w-7xl max-h-[90vh] w-full mx-4"
         onClick={(e) => e.stopPropagation()}
       >
         <img
           src={currentImage.url}
-          alt={currentImage.description || 'Blossom image'}
+          alt={`Blossom image - ${currentImage.type}`}
           className="w-full h-full object-contain rounded-lg shadow-2xl"
         />
 
@@ -135,19 +133,13 @@ export function ImageModal({ images, initialIndex, onClose }: ImageModalProps) {
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 rounded-b-lg">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
-              {currentImage.description && (
-                <p className="text-white text-lg mb-2 line-clamp-2">
-                  {currentImage.description}
-                </p>
-              )}
               <div className="flex flex-wrap gap-4 text-sm text-white/70">
-                <span>{formatDate(currentImage.createdAt)}</span>
-                {currentImage.dimensions && (
-                  <span>{currentImage.dimensions}</span>
+                <span>{formatDate(currentImage.uploaded)}</span>
+                {currentImage.width && currentImage.height && (
+                  <span>{currentImage.width}x{currentImage.height}</span>
                 )}
-                {currentImage.size && (
-                  <span>{formatFileSize(parseInt(currentImage.size))}</span>
-                )}
+                <span>{formatFileSize(currentImage.size)}</span>
+                <span className="font-mono text-xs">{currentImage.type}</span>
                 {images.length > 1 && (
                   <span>
                     {currentIndex + 1} / {images.length}

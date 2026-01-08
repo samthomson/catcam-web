@@ -1,31 +1,36 @@
 import { useQuery } from '@tanstack/react-query';
-import { useNostr } from '@nostrify/react';
 import { nip19 } from 'nostr-tools';
-import type { NostrEvent } from '@nostrify/nostrify';
 
 interface BlossomImage {
   url: string;
-  hash: string;
-  mimeType?: string;
-  size?: string;
-  dimensions?: string;
-  blurhash?: string;
-  description?: string;
-  createdAt: number;
-  event: NostrEvent;
+  sha256: string;
+  size: number;
+  type: string;
+  uploaded: number;
+  width?: number;
+  height?: number;
+}
+
+interface BlossomListResponse {
+  sha256: string;
+  size: number;
+  type: string;
+  uploaded: number;
+  url?: string;
+  width?: number;
+  height?: number;
 }
 
 /**
- * Hook to fetch all Blossom images (kind 1063) for a given npub
+ * Hook to fetch all Blossom images for a given npub
+ * Fetches directly from Blossom server HTTP API
  * @param npub - The npub to fetch images for
- * @param blossomRelay - Optional specific Blossom relay to query
+ * @param blossomServer - Blossom server URL (default: https://bs.samt.st)
  */
-export function useBlossomImages(npub: string, blossomRelay?: string) {
-  const { nostr } = useNostr();
-
+export function useBlossomImages(npub: string, blossomServer: string = 'https://bs.samt.st') {
   return useQuery({
-    queryKey: ['blossom-images', npub, blossomRelay],
-    queryFn: async (c) => {
+    queryKey: ['blossom-images', npub, blossomServer],
+    queryFn: async ({ signal }) => {
       // Decode the npub to get the pubkey
       const decoded = nip19.decode(npub);
       if (decoded.type !== 'npub') {
@@ -33,58 +38,32 @@ export function useBlossomImages(npub: string, blossomRelay?: string) {
       }
       const pubkey = decoded.data;
 
-      const signal = AbortSignal.any([c.signal, AbortSignal.timeout(15000)]);
+      // Fetch from Blossom server's list endpoint
+      // BUD-04: GET /{pubkey}/list - List all blobs uploaded by a pubkey
+      const url = `${blossomServer}/${pubkey}/list`;
 
-      // Query the specific relay if provided, otherwise use default pool
-      const querySource = blossomRelay ? nostr.relay(blossomRelay) : nostr;
+      const response = await fetch(url, { signal });
 
-      // Fetch kind 1063 (File Metadata) events from the user
-      const events = await querySource.query(
-        [
-          {
-            kinds: [1063],
-            authors: [pubkey],
-            limit: 500,
-          },
-        ],
-        { signal }
-      );
+      if (!response.ok) {
+        throw new Error(`Failed to fetch from Blossom server: ${response.statusText}`);
+      }
 
-      // Transform events into BlossomImage objects
-      const images: BlossomImage[] = events
-        .map((event) => {
-          const url = event.tags.find(([name]) => name === 'url')?.[1];
-          const hash = event.tags.find(([name]) => name === 'x')?.[1];
-          const mimeType = event.tags.find(([name]) => name === 'm')?.[1];
-          const size = event.tags.find(([name]) => name === 'size')?.[1];
-          const dimensions = event.tags.find(([name]) => name === 'dim')?.[1];
-          const blurhash = event.tags.find(([name]) => name === 'blurhash')?.[1];
+      const blobs: BlossomListResponse[] = await response.json();
 
-          // Only include events that have a valid URL and hash (required fields)
-          if (!url || !hash) {
-            return null;
-          }
-
-          // Filter for image MIME types only
-          if (mimeType && !mimeType.startsWith('image/')) {
-            return null;
-          }
-
-          return {
-            url,
-            hash,
-            mimeType,
-            size,
-            dimensions,
-            blurhash,
-            description: event.content,
-            createdAt: event.created_at,
-            event,
-          };
-        })
-        .filter((img): img is BlossomImage => img !== null)
-        // Sort by creation date, newest first
-        .sort((a, b) => b.createdAt - a.createdAt);
+      // Filter for images only and transform to our format
+      const images: BlossomImage[] = blobs
+        .filter((blob) => blob.type.startsWith('image/'))
+        .map((blob) => ({
+          url: blob.url || `${blossomServer}/${blob.sha256}`,
+          sha256: blob.sha256,
+          size: blob.size,
+          type: blob.type,
+          uploaded: blob.uploaded,
+          width: blob.width,
+          height: blob.height,
+        }))
+        // Sort by upload date, newest first
+        .sort((a, b) => b.uploaded - a.uploaded);
 
       return images;
     },

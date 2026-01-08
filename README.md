@@ -31,15 +31,15 @@ A beautiful, decentralized image gallery built on Nostr that displays all pictur
 [Blossom](https://github.com/hzrd149/blossom) is a set of standards (BUDs - Blossom Upgrade Documents) for dealing with servers that store files addressable by their SHA-256 hash. It provides a decentralized alternative to traditional file hosting.
 
 This gallery specifically:
-- Queries the **bs.samt.st** Blossom relay
-- Fetches **Kind 1063** events (File Metadata)
-- Displays images with their metadata (dimensions, size, description)
-- Validates file integrity using SHA-256 hashes
+- Queries the **bs.samt.st** Blossom server directly via HTTP API
+- Uses **BUD-04** (`/{pubkey}/list`) endpoint to list all blobs
+- Displays images with their metadata (dimensions, size, type)
+- No Nostr relay needed - pure HTTP file server protocol
 
 ## 🎯 Current Configuration
 
 **Default User**: `npub1yvtgsglj7vgrw2u2gkqsvz9gj3uq9hv4dsrjzw7y83kkhqwkg2ysk2x2m3`
-**Relay Pool**: Uses default configured Nostr relays
+**Blossom Server**: `https://bs.samt.st`
 
 ## 🔧 Customization
 
@@ -61,10 +61,10 @@ return params.get('npub') || 'npub1your_npub_here';
 
 ### Important Notes
 
-⚠️ **Not all users have Blossom uploads**: Kind 1063 (File Metadata) events are only published when users upload files to Blossom servers. If you see "No Images Found", it means either:
-- The user hasn't uploaded any images to Blossom
-- Their images are stored on relays not in your configured relay pool
-- The Blossom uploads haven't propagated to the queried relays yet
+⚠️ **Not all users have Blossom uploads**: If you see "No Images Found", it means either:
+- The user hasn't uploaded any images to this Blossom server
+- The user's uploads are on a different Blossom server
+- The pubkey doesn't exist on this server
 
 ## 📦 Project Structure
 
@@ -98,21 +98,19 @@ Full-screen image viewer with:
 ### useBlossomImages
 Custom React Query hook that:
 - Decodes npub to pubkey
-- Queries Kind 1063 events from specified relay
-- Validates and filters image events
-- Sorts by creation date
+- Fetches blob list from Blossom server HTTP API (BUD-04)
+- Filters for image MIME types only
+- Sorts by upload date
 
-## 🔑 Nostr Integration
+## 🔑 Blossom API Integration
 
-The app uses several Nostr event kinds:
+The app uses the Blossom HTTP API:
 
-- **Kind 1063**: File Metadata (images with urls, hashes, dimensions)
-- **Kind 0**: User Metadata (profile info, avatar, bio)
+- **BUD-04**: `GET /{pubkey}/list` - Lists all blobs uploaded by a pubkey
+- **Response**: JSON array of blob objects with sha256, size, type, uploaded timestamp
+- **Image Filtering**: Filters results to only show items with `type` starting with `image/`
 
-Required tags for Kind 1063 events:
-- `url`: Download URL for the image
-- `x`: SHA-256 hash for verification
-- `m`: MIME type (filtered to image/* only)
+Profile metadata is fetched from Nostr (Kind 0) to show user avatar and bio.
 
 ## 🎭 Design Principles
 
