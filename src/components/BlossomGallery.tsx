@@ -13,8 +13,8 @@ interface BlossomGalleryProps {
 }
 
 export function BlossomGallery({ npub }: BlossomGalleryProps) {
-  const blossomRelay = 'wss://bs.samt.st';
-  const { data: images, isLoading, error } = useBlossomImages(npub, blossomRelay);
+  // Try without specific relay first - use the default relay pool
+  const { data: images, isLoading, error } = useBlossomImages(npub);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
 
   // Decode npub to get pubkey for author info
@@ -93,7 +93,7 @@ export function BlossomGallery({ npub }: BlossomGalleryProps) {
       <div className="col-span-full">
         <Card className="border-dashed border-purple-200 dark:border-purple-700">
           <CardContent className="py-16 px-8 text-center">
-            <div className="max-w-md mx-auto space-y-6">
+            <div className="max-w-2xl mx-auto space-y-6">
               <div className="relative mx-auto w-24 h-24">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full blur-xl opacity-30"></div>
                 <div className="relative bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/20 dark:to-pink-900/20 rounded-full flex items-center justify-center w-24 h-24">
@@ -106,9 +106,18 @@ export function BlossomGallery({ npub }: BlossomGalleryProps) {
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
                   No Images Found
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  This user hasn't uploaded any images to Blossom yet. Check back later for content!
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  This user hasn't uploaded any images to Blossom servers yet, or their images are stored on relays we're not currently querying.
                 </p>
+                <div className="bg-purple-50 dark:bg-purple-900/10 rounded-lg p-4 text-sm text-left space-y-2">
+                  <p className="font-medium text-gray-900 dark:text-gray-100">💡 Try a different user:</p>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Add <code className="bg-purple-100 dark:bg-purple-900/30 px-2 py-1 rounded text-purple-700 dark:text-purple-300">?npub=YOUR_NPUB_HERE</code> to the URL
+                  </p>
+                  <p className="text-gray-600 dark:text-gray-400 text-xs">
+                    Example: <code className="bg-purple-100 dark:bg-purple-900/30 px-1 py-0.5 rounded">?npub=npub1r0rs5q2gk0e3dk3nlc7gnu378ec6cnlenqp8a3cjhyzu6f8k5sgs4sq9ac</code>
+                  </p>
+                </div>
               </div>
             </div>
           </CardContent>

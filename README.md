@@ -38,22 +38,33 @@ This gallery specifically:
 
 ## 🎯 Current Configuration
 
-**Target User**: `npub1yvtgsglj7vgrw2u2gkqsvz9gj3uq9hv4dsrjzw7y83kkhqwkg2ysk2x2m3`  
-**Blossom Relay**: `wss://bs.samt.st`
+**Default User**: `npub1yvtgsglj7vgrw2u2gkqsvz9gj3uq9hv4dsrjzw7y83kkhqwkg2ysk2x2m3`
+**Relay Pool**: Uses default configured Nostr relays
 
 ## 🔧 Customization
 
-To change the target user, edit `src/pages/Index.tsx`:
+### Change User via URL Parameter
 
-```typescript
-const targetNpub = 'npub1your_npub_here';
+The easiest way to view a different user's Blossom uploads is by adding a URL parameter:
+
+```
+?npub=npub1r0rs5q2gk0e3dk3nlc7gnu378ec6cnlenqp8a3cjhyzu6f8k5sgs4sq9ac
 ```
 
-To use a different Blossom relay, edit `src/components/BlossomGallery.tsx`:
+### Change Default User
+
+To permanently change the default user, edit `src/pages/Index.tsx`:
 
 ```typescript
-const blossomRelay = 'wss://your.blossom.relay';
+return params.get('npub') || 'npub1your_npub_here';
 ```
+
+### Important Notes
+
+⚠️ **Not all users have Blossom uploads**: Kind 1063 (File Metadata) events are only published when users upload files to Blossom servers. If you see "No Images Found", it means either:
+- The user hasn't uploaded any images to Blossom
+- Their images are stored on relays not in your configured relay pool
+- The Blossom uploads haven't propagated to the queried relays yet
 
 ## 📦 Project Structure
 

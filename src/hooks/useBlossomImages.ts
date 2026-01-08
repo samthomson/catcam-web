@@ -33,7 +33,7 @@ export function useBlossomImages(npub: string, blossomRelay?: string) {
       }
       const pubkey = decoded.data;
 
-      const signal = AbortSignal.any([c.signal, AbortSignal.timeout(5000)]);
+      const signal = AbortSignal.any([c.signal, AbortSignal.timeout(15000)]);
 
       // Query the specific relay if provided, otherwise use default pool
       const querySource = blossomRelay ? nostr.relay(blossomRelay) : nostr;

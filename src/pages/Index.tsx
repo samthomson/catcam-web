@@ -1,8 +1,13 @@
+import { useMemo } from 'react';
 import { useSeoMeta } from '@unhead/react';
 import { BlossomGallery } from '@/components/BlossomGallery';
 
 const Index = () => {
-  const targetNpub = 'npub1yvtgsglj7vgrw2u2gkqsvz9gj3uq9hv4dsrjzw7y83kkhqwkg2ysk2x2m3';
+  // Get npub from URL parameter or use default
+  const targetNpub = useMemo(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('npub') || 'npub1yvtgsglj7vgrw2u2gkqsvz9gj3uq9hv4dsrjzw7y83kkhqwkg2ysk2x2m3';
+  }, []);
 
   useSeoMeta({
     title: 'Blossom Picture Gallery',
