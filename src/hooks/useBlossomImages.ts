@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 import { useNostr } from '@nostrify/react';
-import { nip19 } from 'nostr-tools';
 import type { NostrEvent } from '@nostrify/nostrify';
 
 interface ImageFromNote {
@@ -14,25 +13,24 @@ interface ImageFromNote {
 /**
  * Hook to fetch images from user's kind 1 notes
  * Extracts image URLs from note content
- * @param npub - The npub to fetch notes for
+ * Hard-coded to relay.samt.st and specific pubkey
  */
-export function useBlossomImages(npub: string) {
+export function useBlossomImages() {
   const { nostr } = useNostr();
 
   return useQuery({
-    queryKey: ['user-images', npub],
+    queryKey: ['user-images'],
     queryFn: async (c) => {
-      // Decode the npub to get the pubkey
-      const decoded = nip19.decode(npub);
-      if (decoded.type !== 'npub') {
-        throw new Error('Invalid npub provided');
-      }
-      const pubkey = decoded.data;
+      // Hard-coded pubkey
+      const pubkey = '23168823f2f310372b8a45810608a8947802dd956c07213bc43c6d6b81d64289';
 
       const signal = AbortSignal.any([c.signal, AbortSignal.timeout(10000)]);
 
+      // Connect to specific relay
+      const relay = nostr.relay('wss://relay.samt.st');
+
       // Fetch kind 1 (Short Text Note) events from the user
-      const events = await nostr.query(
+      const events = await relay.query(
         [
           {
             kinds: [1],

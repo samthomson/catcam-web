@@ -29,7 +29,8 @@ A beautiful, decentralized image gallery built on Nostr that displays all images
 
 ## 🎯 Current Configuration
 
-**Default User**: `npub1yvtgsglj7vgrw2u2gkqsvz9gj3uq9hv4dsrjzw7y83kkhqwkg2ysk2x2m3`
+**Pubkey**: `23168823f2f310372b8a45810608a8947802dd956c07213bc43c6d6b81d64289`
+**Relay**: `wss://relay.samt.st`
 
 ## 📝 How It Works
 
@@ -43,28 +44,12 @@ The gallery fetches all kind 1 (Short Text Note) events from the specified user,
 
 ## 🔧 Customization
 
-### Change User via URL Parameter
-
-The easiest way to view a different user's Blossom uploads is by adding a URL parameter:
-
-```
-?npub=npub1r0rs5q2gk0e3dk3nlc7gnu378ec6cnlenqp8a3cjhyzu6f8k5sgs4sq9ac
-```
-
-### Change Default User
-
-To permanently change the default user, edit `src/pages/Index.tsx`:
+To change the pubkey or relay, edit `src/hooks/useBlossomImages.ts`:
 
 ```typescript
-return params.get('npub') || 'npub1your_npub_here';
+const pubkey = 'your_pubkey_here';
+const relay = nostr.relay('wss://your.relay.here');
 ```
-
-### Important Notes
-
-⚠️ **Not all users post images**: If you see "No Images Found", it means:
-- The user hasn't posted any notes with image URLs
-- The user's notes haven't propagated to the queried relays yet
-- Try a different user who posts images frequently
 
 ## 📦 Project Structure
 

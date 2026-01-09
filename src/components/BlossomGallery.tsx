@@ -1,5 +1,4 @@
-import { useState, useMemo } from 'react';
-import { nip19 } from 'nostr-tools';
+import { useState } from 'react';
 import { useBlossomImages } from '@/hooks/useBlossomImages';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -13,19 +12,11 @@ interface BlossomGalleryProps {
 }
 
 export function BlossomGallery({ npub }: BlossomGalleryProps) {
-  // Try without specific relay first - use the default relay pool
-  const { data: images, isLoading, error } = useBlossomImages(npub);
+  const { data: images, isLoading, error } = useBlossomImages();
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
 
-  // Decode npub to get pubkey for author info
-  const pubkey = useMemo(() => {
-    try {
-      const decoded = nip19.decode(npub);
-      return decoded.type === 'npub' ? decoded.data : '';
-    } catch {
-      return '';
-    }
-  }, [npub]);
+  // Hard-coded pubkey
+  const pubkey = '23168823f2f310372b8a45810608a8947802dd956c07213bc43c6d6b81d64289';
 
   const author = useAuthor(pubkey);
   const metadata = author.data?.metadata;
