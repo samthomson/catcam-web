@@ -1,36 +1,27 @@
 import { useQuery } from '@tanstack/react-query';
+import { useNostr } from '@nostrify/react';
 import { nip19 } from 'nostr-tools';
+import type { NostrEvent } from '@nostrify/nostrify';
 
-interface BlossomImage {
+interface ImageFromNote {
   url: string;
-  sha256: string;
-  size: number;
-  type: string;
-  uploaded: number;
-  width?: number;
-  height?: number;
-}
-
-interface BlossomListResponse {
-  sha256: string;
-  size: number;
-  type: string;
-  uploaded: number;
-  url?: string;
-  width?: number;
-  height?: number;
+  noteId: string;
+  content: string;
+  createdAt: number;
+  event: NostrEvent;
 }
 
 /**
- * Hook to fetch all Blossom images for a given npub
- * Fetches directly from Blossom server HTTP API
- * @param npub - The npub to fetch images for
- * @param blossomServer - Blossom server URL (default: https://bs.samt.st)
+ * Hook to fetch images from user's kind 1 notes
+ * Extracts image URLs from note content
+ * @param npub - The npub to fetch notes for
  */
-export function useBlossomImages(npub: string, blossomServer: string = 'https://bs.samt.st') {
+export function useBlossomImages(npub: string) {
+  const { nostr } = useNostr();
+
   return useQuery({
-    queryKey: ['blossom-images', npub, blossomServer],
-    queryFn: async ({ signal }) => {
+    queryKey: ['user-images', npub],
+    queryFn: async (c) => {
       // Decode the npub to get the pubkey
       const decoded = nip19.decode(npub);
       if (decoded.type !== 'npub') {
@@ -38,34 +29,42 @@ export function useBlossomImages(npub: string, blossomServer: string = 'https://
       }
       const pubkey = decoded.data;
 
-      // Fetch from Blossom server's list endpoint
-      // BUD-04: GET /{pubkey}/list - List all blobs uploaded by a pubkey
-      const url = `${blossomServer}/${pubkey}/list`;
+      const signal = AbortSignal.any([c.signal, AbortSignal.timeout(10000)]);
 
-      const response = await fetch(url, { signal });
+      // Fetch kind 1 (Short Text Note) events from the user
+      const events = await nostr.query(
+        [
+          {
+            kinds: [1],
+            authors: [pubkey],
+            limit: 500,
+          },
+        ],
+        { signal }
+      );
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch from Blossom server: ${response.statusText}`);
+      // Extract all image URLs from the notes
+      const imageUrlPattern = /https?:\/\/[^\s]+\.(jpg|jpeg|png|gif|webp|bmp|svg)(\?[^\s]*)?/gi;
+
+      const images: ImageFromNote[] = [];
+
+      for (const event of events) {
+        const matches = event.content.match(imageUrlPattern);
+        if (matches) {
+          for (const url of matches) {
+            images.push({
+              url: url.trim(),
+              noteId: event.id,
+              content: event.content,
+              createdAt: event.created_at,
+              event,
+            });
+          }
+        }
       }
 
-      const blobs: BlossomListResponse[] = await response.json();
-
-      // Filter for images only and transform to our format
-      const images: BlossomImage[] = blobs
-        .filter((blob) => blob.type.startsWith('image/'))
-        .map((blob) => ({
-          url: blob.url || `${blossomServer}/${blob.sha256}`,
-          sha256: blob.sha256,
-          size: blob.size,
-          type: blob.type,
-          uploaded: blob.uploaded,
-          width: blob.width,
-          height: blob.height,
-        }))
-        // Sort by upload date, newest first
-        .sort((a, b) => b.uploaded - a.uploaded);
-
-      return images;
+      // Sort by creation date, newest first
+      return images.sort((a, b) => b.createdAt - a.createdAt);
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
     retry: 2,

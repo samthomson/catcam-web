@@ -4,12 +4,9 @@ import { Button } from '@/components/ui/button';
 
 interface BlossomImage {
   url: string;
-  sha256: string;
-  size: number;
-  type: string;
-  uploaded: number;
-  width?: number;
-  height?: number;
+  noteId: string;
+  content: string;
+  createdAt: number;
 }
 
 interface ImageModalProps {
@@ -52,7 +49,8 @@ export function ImageModal({ images, initialIndex, onClose }: ImageModalProps) {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `blossom-${currentImage.sha256.slice(0, 8)}.${getFileExtension(currentImage.type)}`;
+      const ext = currentImage.url.split('.').pop()?.split('?')[0] || 'jpg';
+      a.download = `image-${currentImage.noteId.slice(0, 8)}.${ext}`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -60,11 +58,6 @@ export function ImageModal({ images, initialIndex, onClose }: ImageModalProps) {
     } catch (error) {
       console.error('Failed to download image:', error);
     }
-  };
-
-  const getFileExtension = (mimeType: string): string => {
-    const ext = mimeType.split('/')[1];
-    return ext || 'jpg';
   };
 
   const formatDate = (timestamp: number): string => {
@@ -125,7 +118,7 @@ export function ImageModal({ images, initialIndex, onClose }: ImageModalProps) {
       >
         <img
           src={currentImage.url}
-          alt={`Blossom image - ${currentImage.type}`}
+          alt="Image from note"
           className="w-full h-full object-contain rounded-lg shadow-2xl"
         />
 
@@ -133,13 +126,13 @@ export function ImageModal({ images, initialIndex, onClose }: ImageModalProps) {
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 rounded-b-lg">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
+              {currentImage.content && (
+                <p className="text-white text-base mb-3 line-clamp-3">
+                  {currentImage.content.replace(/https?:\/\/[^\s]+/g, '').trim()}
+                </p>
+              )}
               <div className="flex flex-wrap gap-4 text-sm text-white/70">
-                <span>{formatDate(currentImage.uploaded)}</span>
-                {currentImage.width && currentImage.height && (
-                  <span>{currentImage.width}x{currentImage.height}</span>
-                )}
-                <span>{formatFileSize(currentImage.size)}</span>
-                <span className="font-mono text-xs">{currentImage.type}</span>
+                <span>{formatDate(currentImage.createdAt)}</span>
                 {images.length > 1 && (
                   <span>
                     {currentIndex + 1} / {images.length}

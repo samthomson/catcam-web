@@ -1,19 +1,20 @@
-# Blossom Picture Gallery
+# Nostr Picture Gallery
 
-A beautiful, decentralized image gallery built on Nostr that displays all pictures from a specific user's Blossom server uploads.
+A beautiful, decentralized image gallery built on Nostr that displays all images from a user's posts (kind 1 notes).
 
 ![Blossom Gallery](https://img.shields.io/badge/Nostr-Powered-purple?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTQuNSAxNkw5LjA4NiAxMS40MTRDOS40NjYgMTEuMDM0IDEwLjAzNCAxMS4wMzQgMTAuNDE0IDExLjQxNEwxNiAxNk0xNCAxNEwxNS41ODYgMTIuNDE0QzE1Ljk2NiAxMi4wMzQgMTYuNTM0IDEyLjAzNCAxNi45MTQgMTIuNDE0TDIwIDE0TTE0IDhILjAxTTYgMjBIMThDMTkuMTA0NiAyMCAyMCAxOS4xMDQ2IDIwIDE4VjZDMjAgNC44OTU0MyAxOS4xMDQ2IDQgMTggNEg2QzQuODk1NDMgNCA0IDQuODk1NDMgNCA2VjE4QzQgMTkuMTA0NiA0Ljg5NTQzIDIwIDYgMjBaIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4=)
 ![Built with Shakespeare](https://img.shields.io/badge/Built%20with-Shakespeare-ff69b4?style=for-the-badge)
 
 ## 🌟 Features
 
-- **Decentralized Image Storage**: Fetches images from Blossom servers (NIP-94)
+- **Image Extraction**: Finds all images posted in user's kind 1 notes
 - **Beautiful UI**: Gradient-filled, modern design with smooth animations
 - **Responsive Grid**: Adaptive layout that works perfectly on all devices
 - **Full-Screen Viewer**: Click any image to view in an immersive modal
 - **Image Navigation**: Keyboard shortcuts (← → ESC) and click navigation
 - **Download Support**: Download images directly from the viewer
 - **Profile Integration**: Displays author profile with avatar and bio
+- **Note Context**: Shows the original note text with each image
 - **Real-time Loading**: Skeleton states and progressive image loading
 - **Dark Mode**: Full dark mode support
 
@@ -26,20 +27,19 @@ A beautiful, decentralized image gallery built on Nostr that displays all pictur
 - **TanStack Query** - Data fetching and caching
 - **Blossom Protocol** - Decentralized file storage
 
-## 📸 What is Blossom?
-
-[Blossom](https://github.com/hzrd149/blossom) is a set of standards (BUDs - Blossom Upgrade Documents) for dealing with servers that store files addressable by their SHA-256 hash. It provides a decentralized alternative to traditional file hosting.
-
-This gallery specifically:
-- Queries the **bs.samt.st** Blossom server directly via HTTP API
-- Uses **BUD-04** (`/{pubkey}/list`) endpoint to list all blobs
-- Displays images with their metadata (dimensions, size, type)
-- No Nostr relay needed - pure HTTP file server protocol
-
 ## 🎯 Current Configuration
 
 **Default User**: `npub1yvtgsglj7vgrw2u2gkqsvz9gj3uq9hv4dsrjzw7y83kkhqwkg2ysk2x2m3`
-**Blossom Server**: `https://bs.samt.st`
+
+## 📝 How It Works
+
+The gallery fetches all kind 1 (Short Text Note) events from the specified user, then extracts image URLs from the content. It supports common image formats:
+- `.jpg` / `.jpeg`
+- `.png`
+- `.gif`
+- `.webp`
+- `.bmp`
+- `.svg`
 
 ## 🔧 Customization
 
@@ -61,10 +61,10 @@ return params.get('npub') || 'npub1your_npub_here';
 
 ### Important Notes
 
-⚠️ **Not all users have Blossom uploads**: If you see "No Images Found", it means either:
-- The user hasn't uploaded any images to this Blossom server
-- The user's uploads are on a different Blossom server
-- The pubkey doesn't exist on this server
+⚠️ **Not all users post images**: If you see "No Images Found", it means:
+- The user hasn't posted any notes with image URLs
+- The user's notes haven't propagated to the queried relays yet
+- Try a different user who posts images frequently
 
 ## 📦 Project Structure
 
@@ -98,19 +98,16 @@ Full-screen image viewer with:
 ### useBlossomImages
 Custom React Query hook that:
 - Decodes npub to pubkey
-- Fetches blob list from Blossom server HTTP API (BUD-04)
-- Filters for image MIME types only
-- Sorts by upload date
+- Queries kind 1 events from Nostr relays
+- Extracts image URLs using regex pattern matching
+- Sorts by creation date
 
-## 🔑 Blossom API Integration
+## 🔑 Nostr Integration
 
-The app uses the Blossom HTTP API:
+The app fetches:
 
-- **BUD-04**: `GET /{pubkey}/list` - Lists all blobs uploaded by a pubkey
-- **Response**: JSON array of blob objects with sha256, size, type, uploaded timestamp
-- **Image Filtering**: Filters results to only show items with `type` starting with `image/`
-
-Profile metadata is fetched from Nostr (Kind 0) to show user avatar and bio.
+- **Kind 1**: Short Text Notes containing image URLs
+- **Kind 0**: User Metadata (profile info, avatar, bio)
 
 ## 🎭 Design Principles
 
@@ -136,7 +133,6 @@ Public domain - built with [Shakespeare](https://shakespeare.diy)
 
 ## 🙏 Credits
 
-- **Blossom Protocol**: [@hzrd149](https://github.com/hzrd149)
 - **Nostr Protocol**: The Nostr community
 - **Shakespeare**: AI-powered development platform
 
