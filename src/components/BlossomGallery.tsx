@@ -11,8 +11,31 @@ interface BlossomGalleryProps {
   npub: string;
 }
 
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function formatTimestamp(timestamp: number): string {
+  const date = new Date(timestamp * 1000);
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const seconds = Math.floor(diff / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (seconds < 60) return `${seconds}s ago`;
+  if (minutes < 60) return `${minutes}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  if (days < 7) return `${days}d ago`;
+
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
 export function BlossomGallery({ npub }: BlossomGalleryProps) {
-  const { data: images, isLoading, error } = useBlossomImages();
+  const { data: images, isLoading, error, isFetching } = useBlossomImages();
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
 
   // Hard-coded pubkey
@@ -98,17 +121,8 @@ export function BlossomGallery({ npub }: BlossomGalleryProps) {
                   No Images Found
                 </h3>
                 <p className="text-gray-600 dark:text-gray-400 mb-4">
-                  This user hasn't uploaded any images to Blossom servers yet, or their images are stored on relays we're not currently querying.
+                  This user hasn't posted any images yet. The gallery auto-refreshes every 15 seconds.
                 </p>
-                <div className="bg-purple-50 dark:bg-purple-900/10 rounded-lg p-4 text-sm text-left space-y-2">
-                  <p className="font-medium text-gray-900 dark:text-gray-100">💡 Try a different user:</p>
-                  <p className="text-gray-600 dark:text-gray-400">
-                    Add <code className="bg-purple-100 dark:bg-purple-900/30 px-2 py-1 rounded text-purple-700 dark:text-purple-300">?npub=YOUR_NPUB_HERE</code> to the URL
-                  </p>
-                  <p className="text-gray-600 dark:text-gray-400 text-xs">
-                    Example: <code className="bg-purple-100 dark:bg-purple-900/30 px-1 py-0.5 rounded">?npub=npub1r0rs5q2gk0e3dk3nlc7gnu378ec6cnlenqp8a3cjhyzu6f8k5sgs4sq9ac</code>
-                  </p>
-                </div>
               </div>
             </div>
           </CardContent>
@@ -119,6 +133,16 @@ export function BlossomGallery({ npub }: BlossomGalleryProps) {
 
   return (
     <>
+      {/* Refresh Indicator */}
+      {isFetching && !isLoading && (
+        <div className="fixed top-20 right-4 z-20 animate-in fade-in slide-in-from-top-2 duration-500">
+          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-purple-200 dark:border-purple-700 rounded-full px-4 py-2 shadow-lg flex items-center gap-2">
+            <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-sm text-gray-700 dark:text-gray-300">Refreshing...</span>
+          </div>
+        </div>
+      )}
+
       {/* Profile Info */}
       <div className="mb-8">
         <Card className="border-purple-200/50 dark:border-purple-700/30 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm overflow-hidden">
@@ -150,7 +174,10 @@ export function BlossomGallery({ npub }: BlossomGalleryProps) {
       </div>
 
       {/* Image Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 transition-opacity duration-300"
+        style={{ opacity: isFetching && !isLoading ? 0.7 : 1 }}
+      >
         {images.map((image, index) => (
           <Card
             key={`${image.noteId}-${index}`}
@@ -177,6 +204,9 @@ export function BlossomGallery({ npub }: BlossomGalleryProps) {
                       {image.content.replace(/https?:\/\/[^\s]+/g, '').trim()}
                     </p>
                   )}
+                  <p className="text-white/60 text-xs">
+                    {formatTimestamp(image.createdAt)}
+                  </p>
                 </div>
               </div>
             </div>
@@ -194,10 +224,4 @@ export function BlossomGallery({ npub }: BlossomGalleryProps) {
       )}
     </>
   );
-}
-
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }

@@ -20,6 +20,7 @@ export function useBlossomImages() {
 
   return useQuery({
     queryKey: ['user-images'],
+    refetchInterval: 15000, // Auto-refresh every 15 seconds
     queryFn: async (c) => {
       // Hard-coded pubkey
       const pubkey = '23168823f2f310372b8a45810608a8947802dd956c07213bc43c6d6b81d64289';
