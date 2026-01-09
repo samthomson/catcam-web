@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
-import { X, ChevronLeft, ChevronRight, Download, ExternalLink } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Download, ExternalLink, Code } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import type { NostrEvent } from '@nostrify/nostrify';
 
 interface BlossomImage {
   url: string;
   noteId: string;
   content: string;
   createdAt: number;
+  event: NostrEvent;
 }
 
 interface ImageModalProps {
@@ -17,6 +19,7 @@ interface ImageModalProps {
 
 export function ImageModal({ images, initialIndex, onClose }: ImageModalProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [showDebug, setShowDebug] = useState(true);
   const currentImage = images[currentIndex];
 
   useEffect(() => {
@@ -83,6 +86,19 @@ export function ImageModal({ images, initialIndex, onClose }: ImageModalProps) {
         <X className="h-6 w-6" />
       </Button>
 
+      {/* Toggle Debug Button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="absolute top-4 right-16 z-10 text-white hover:bg-white/10"
+        onClick={(e) => {
+          e.stopPropagation();
+          setShowDebug(!showDebug);
+        }}
+      >
+        <Code className="h-6 w-6" />
+      </Button>
+
       {/* Navigation Buttons */}
       {images.length > 1 && (
         <>
@@ -111,19 +127,44 @@ export function ImageModal({ images, initialIndex, onClose }: ImageModalProps) {
         </>
       )}
 
-      {/* Image Container */}
+      {/* Main Content Area */}
       <div
-        className="relative max-w-7xl max-h-[90vh] w-full mx-4"
+        className="relative w-full h-[90vh] mx-4 flex gap-4"
         onClick={(e) => e.stopPropagation()}
       >
-        <img
-          src={currentImage.url}
-          alt="Image from note"
-          className="w-full h-full object-contain rounded-lg shadow-2xl"
-        />
+        {/* Image Container */}
+        <div className={`relative ${showDebug ? 'flex-1' : 'w-full'} h-full flex items-center justify-center`}>
+          <img
+            src={currentImage.url}
+            alt="Image from note"
+            className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+          />
+        </div>
 
-        {/* Image Info Overlay */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 rounded-b-lg">
+        {/* Debug Panel */}
+        {showDebug && (
+          <div className="w-96 h-full bg-gray-900/95 backdrop-blur-sm rounded-lg shadow-2xl overflow-hidden flex flex-col">
+            <div className="p-4 border-b border-gray-700">
+              <h3 className="text-white font-semibold text-lg flex items-center gap-2">
+                <Code className="h-5 w-5" />
+                Nostr Event
+              </h3>
+            </div>
+            <div className="flex-1 overflow-auto p-4">
+              <pre className="text-xs text-gray-300 font-mono whitespace-pre-wrap break-words">
+                {JSON.stringify(currentImage.event, null, 4)}
+              </pre>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Image Info Overlay - only show when debug is hidden */}
+      {!showDebug && (
+        <div
+          className="absolute bottom-0 left-0 right-0 max-w-7xl mx-auto bg-gradient-to-t from-black/80 to-transparent p-6 rounded-b-lg"
+          onClick={(e) => e.stopPropagation()}
+        >
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
               {currentImage.content && (
@@ -164,7 +205,7 @@ export function ImageModal({ images, initialIndex, onClose }: ImageModalProps) {
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Counter for mobile */}
       {images.length > 1 && (
