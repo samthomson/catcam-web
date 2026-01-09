@@ -1,6 +1,6 @@
-# Nostr Picture Gallery
+# Cat Cam
 
-A beautiful, decentralized image gallery built on Nostr that displays all images from a user's posts (kind 1 notes).
+A live cat monitoring camera built on Nostr that displays images from kind 1 notes posted to relay.samt.st.
 
 ![Blossom Gallery](https://img.shields.io/badge/Nostr-Powered-purple?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTQuNSAxNkw5LjA4NiAxMS40MTRDOS40NjYgMTEuMDM0IDEwLjAzNCAxMS4wMzQgMTAuNDE0IDExLjQxNEwxNiAxNk0xNCAxNEwxNS41ODYgMTIuNDE0QzE1Ljk2NiAxMi4wMzQgMTYuNTM0IDEyLjAzNCAxNi45MTQgMTIuNDE0TDIwIDE0TTE0IDhILjAxTTYgMjBIMThDMTkuMTA0NiAyMCAyMCAxOS4xMDQ2IDIwIDE4VjZDMjAgNC44OTU0MyAxOS4xMDQ2IDQgMTggNEg2QzQuODk1NDMgNCA0IDQuODk1NDMgNCA2VjE4QzQgMTkuMTA0NiA0Ljg5NTQzIDIwIDYgMjBaIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4=)
 ![Built with Shakespeare](https://img.shields.io/badge/Built%20with-Shakespeare-ff69b4?style=for-the-badge)

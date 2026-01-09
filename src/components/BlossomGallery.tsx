@@ -3,9 +3,6 @@ import { useBlossomImages } from '@/hooks/useBlossomImages';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ImageModal } from '@/components/ImageModal';
-import { useAuthor } from '@/hooks/useAuthor';
-import { genUserName } from '@/lib/genUserName';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface BlossomGalleryProps {
   npub: string;
@@ -37,14 +34,6 @@ function formatTimestamp(timestamp: number): string {
 export function BlossomGallery({ npub }: BlossomGalleryProps) {
   const { data: images, isLoading, error, isFetching } = useBlossomImages();
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
-
-  // Hard-coded pubkey
-  const pubkey = '23168823f2f310372b8a45810608a8947802dd956c07213bc43c6d6b81d64289';
-
-  const author = useAuthor(pubkey);
-  const metadata = author.data?.metadata;
-  const displayName = metadata?.name || metadata?.display_name || genUserName(pubkey);
-  const profileImage = metadata?.picture;
 
   if (error) {
     return (
@@ -142,36 +131,6 @@ export function BlossomGallery({ npub }: BlossomGalleryProps) {
           </div>
         </div>
       )}
-
-      {/* Profile Info */}
-      <div className="mb-8">
-        <Card className="border-purple-200/50 dark:border-purple-700/30 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-pink-500/5 dark:from-purple-500/10 dark:to-pink-500/10"></div>
-          <CardContent className="p-6 relative">
-            <div className="flex items-center gap-4">
-              <Avatar className="h-16 w-16 border-2 border-purple-200 dark:border-purple-700">
-                <AvatarImage src={profileImage} alt={displayName} />
-                <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white text-xl">
-                  {displayName[0]?.toUpperCase() || '?'}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  {displayName}
-                </h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  {images.length} {images.length === 1 ? 'image' : 'images'} on Blossom
-                </p>
-              </div>
-            </div>
-            {metadata?.about && (
-              <p className="mt-4 text-gray-700 dark:text-gray-300 text-sm">
-                {metadata.about}
-              </p>
-            )}
-          </CardContent>
-        </Card>
-      </div>
 
       {/* Image Grid */}
       <div

@@ -10,8 +10,8 @@ const Index = () => {
   }, []);
 
   useSeoMeta({
-    title: 'Blossom Picture Gallery',
-    description: 'A beautiful gallery showcasing images from Blossom servers on Nostr',
+    title: 'Cat Cam',
+    description: 'Live cat monitoring camera',
   });
 
   return (
@@ -34,30 +34,25 @@ const Index = () => {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
                     />
                   </svg>
                 </div>
               </div>
               <div>
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
-                  Blossom Gallery
+                  Cat Cam
                 </h1>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  Decentralized image hosting on Nostr
+                  Live cat monitoring
                 </p>
               </div>
             </div>
-            <div className="flex flex-col items-end gap-1">
-              <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">
-                {targetNpub.slice(0, 12)}...{targetNpub.slice(-8)}
-              </p>
-              <div className="flex items-center gap-1.5 text-xs">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                <span className="text-gray-600 dark:text-gray-400">
-                  relay.samt.st
-                </span>
-              </div>
+            <div className="flex items-center gap-1.5 text-xs">
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+              <span className="text-gray-600 dark:text-gray-400">
+                relay.samt.st
+              </span>
             </div>
           </div>
         </div>
