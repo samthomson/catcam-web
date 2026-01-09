@@ -31,6 +31,40 @@ function formatTimestamp(timestamp: number): string {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
+function getWifiSignalInfo(rssi: number | null): { strength: string; color: string; bars: number; emoji: string } {
+  if (rssi === null) {
+    return { strength: 'Unknown', color: 'text-gray-400', bars: 0, emoji: '📡' };
+  }
+
+  if (rssi >= -30) {
+    return { strength: 'Excellent', color: 'text-green-400', bars: 4, emoji: '📶' };
+  } else if (rssi >= -50) {
+    return { strength: 'Good', color: 'text-green-400', bars: 3, emoji: '📶' };
+  } else if (rssi >= -60) {
+    return { strength: 'Fair', color: 'text-yellow-400', bars: 2, emoji: '📶' };
+  } else if (rssi >= -70) {
+    return { strength: 'Weak', color: 'text-orange-400', bars: 1, emoji: '📶' };
+  } else if (rssi >= -80) {
+    return { strength: 'Very Weak', color: 'text-red-400', bars: 1, emoji: '📶' };
+  } else {
+    return { strength: 'Unusable', color: 'text-red-600', bars: 0, emoji: '❌' };
+  }
+}
+
+function extractRSSI(event: any): number | null {
+  // Look for rssi or wifi_rssi in tags
+  const rssiTag = event.tags.find((tag: string[]) =>
+    tag[0] === 'rssi' || tag[0] === 'wifi_rssi' || tag[0] === 'signal'
+  );
+
+  if (rssiTag && rssiTag[1]) {
+    const value = parseInt(rssiTag[1]);
+    return isNaN(value) ? null : value;
+  }
+
+  return null;
+}
+
 export function BlossomGallery({ npub }: BlossomGalleryProps) {
   const { data: images, isLoading, error, isFetching } = useBlossomImages();
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
@@ -163,9 +197,22 @@ export function BlossomGallery({ npub }: BlossomGalleryProps) {
                       {image.content.replace(/https?:\/\/[^\s]+/g, '').trim()}
                     </p>
                   )}
-                  <p className="text-white/60 text-xs">
-                    {formatTimestamp(image.createdAt)}
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-white/60 text-xs">
+                      {formatTimestamp(image.createdAt)}
+                    </p>
+                    {(() => {
+                      const rssi = extractRSSI(image.event);
+                      const signalInfo = getWifiSignalInfo(rssi);
+                      return rssi !== null ? (
+                        <div className={`flex items-center gap-1 text-xs ${signalInfo.color}`}>
+                          <span>{signalInfo.emoji}</span>
+                          <span>{rssi} dBm</span>
+                          <span className="text-white/50">({signalInfo.strength})</span>
+                        </div>
+                      ) : null;
+                    })()}
+                  </div>
                 </div>
               </div>
             </div>

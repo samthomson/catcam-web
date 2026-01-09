@@ -174,6 +174,17 @@ export function ImageModal({ images, initialIndex, onClose }: ImageModalProps) {
               )}
               <div className="flex flex-wrap gap-4 text-sm text-white/70">
                 <span>{formatDate(currentImage.createdAt)}</span>
+                {(() => {
+                  const rssi = extractRSSI(currentImage.event);
+                  const signalInfo = getWifiSignalInfo(rssi);
+                  return rssi !== null ? (
+                    <span className={`flex items-center gap-1 ${signalInfo.color}`}>
+                      <span>{signalInfo.emoji}</span>
+                      <span>{rssi} dBm</span>
+                      <span className="text-white/50">({signalInfo.strength})</span>
+                    </span>
+                  ) : null;
+                })()}
                 {images.length > 1 && (
                   <span>
                     {currentIndex + 1} / {images.length}
@@ -221,4 +232,38 @@ function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function getWifiSignalInfo(rssi: number | null): { strength: string; color: string; bars: number; emoji: string } {
+  if (rssi === null) {
+    return { strength: 'Unknown', color: 'text-gray-400', bars: 0, emoji: '📡' };
+  }
+
+  if (rssi >= -30) {
+    return { strength: 'Excellent', color: 'text-green-400', bars: 4, emoji: '📶' };
+  } else if (rssi >= -50) {
+    return { strength: 'Good', color: 'text-green-400', bars: 3, emoji: '📶' };
+  } else if (rssi >= -60) {
+    return { strength: 'Fair', color: 'text-yellow-400', bars: 2, emoji: '📶' };
+  } else if (rssi >= -70) {
+    return { strength: 'Weak', color: 'text-orange-400', bars: 1, emoji: '📶' };
+  } else if (rssi >= -80) {
+    return { strength: 'Very Weak', color: 'text-red-400', bars: 1, emoji: '📶' };
+  } else {
+    return { strength: 'Unusable', color: 'text-red-600', bars: 0, emoji: '❌' };
+  }
+}
+
+function extractRSSI(event: any): number | null {
+  // Look for rssi or wifi_rssi in tags
+  const rssiTag = event.tags.find((tag: string[]) =>
+    tag[0] === 'rssi' || tag[0] === 'wifi_rssi' || tag[0] === 'signal'
+  );
+
+  if (rssiTag && rssiTag[1]) {
+    const value = parseInt(rssiTag[1]);
+    return isNaN(value) ? null : value;
+  }
+
+  return null;
 }
